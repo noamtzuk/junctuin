@@ -1,0 +1,141 @@
+import "./patterns/DwyerPatterns.spectra"
+
+module InitialSpecification
+
+
+//Environment controlled input variables (sensors)
+env boolean carFromWtoE;
+env boolean carFromEtoW;
+env boolean carFromNtoS;
+env boolean carFromStoN;
+env boolean carFromNtoE;
+env boolean carFromNtoW;
+env boolean carFromStoE;
+env boolean carFromStoW;
+env boolean carFromEtoN;
+env boolean carFromEtoS;
+env boolean carFromWtoN;
+env boolean carFromWtoS;
+
+//environment variable for signaling pedestrians
+env boolean pedestrianInE;
+env boolean pedestrianInW;
+env boolean pedestrianInN;
+env boolean pedestrianInS;
+
+//environment variable for signaling an ambulance
+env boolean ambulanceFromWtoE;
+env boolean ambulanceFromEtoW;
+env boolean ambulanceFromNtoS;
+env boolean ambulanceFromStoN;
+env boolean ambulanceFromNtoE;
+env boolean ambulanceFromNtoW;
+env boolean ambulanceFromStoE;
+env boolean ambulanceFromStoW;
+env boolean ambulanceFromEtoN;
+env boolean ambulanceFromEtoS;
+env boolean ambulanceFromWtoN;
+env boolean ambulanceFromWtoS;
+
+//environment variable for day or night
+env boolean day;
+env boolean night;
+
+//environment variable for day or night
+env boolean maintenanceInE;
+env boolean maintenanceInW;
+env boolean maintenanceInN;
+env boolean maintenanceInS;
+
+//System controlled output variables (lights for cars)
+sys boolean greenFromWtoE;
+sys boolean greenFromEtoW;
+sys boolean greenFromNtoS;
+sys boolean greenFromStoN;
+sys boolean greenFromNtoE;
+sys boolean greenFromNtoW;
+sys boolean greenFromStoE;
+sys boolean greenFromStoW;
+sys boolean greenFromEtoN;
+sys boolean greenFromEtoS;
+sys boolean greenFromWtoN;
+sys boolean greenFromWtoS;
+
+//System controlled variables (lights for pedestrians)
+sys boolean greenPedestrianW;
+sys boolean greenPedestrianS;
+sys boolean greenPedestrianN;
+sys boolean greenPedestrianE;
+
+//System controlled variables (maintenance sign)
+sys boolean maintenanceSignInS;
+sys boolean maintenanceSignInN;
+sys boolean maintenanceSignInW;
+sys boolean maintenanceSignInE;
+
+asm GF carFromWtoE;
+asm GF carFromEtoW;
+asm GF carFromNtoS;
+asm GF carFromStoN;
+asm GF carFromNtoE;
+asm GF carFromNtoW;
+asm GF carFromStoE;
+asm GF carFromStoW;
+asm GF carFromEtoN;
+asm GF carFromEtoS;
+asm GF carFromWtoN;
+asm GF carFromWtoS;
+
+//new guarantee for not letting an ambulance wait
+gar G ambulanceFromWtoE -> greenFromWtoE;
+gar G ambulanceFromEtoW -> greenFromEtoW;
+gar G ambulanceFromNtoS -> greenFromNtoS;
+gar G ambulanceFromStoN -> greenFromStoN;
+gar G ambulanceFromNtoE -> greenFromNtoE;
+gar G ambulanceFromNtoW -> greenFromNtoW;
+gar G ambulanceFromStoE -> greenFromStoE;
+gar G ambulanceFromStoW -> greenFromStoW;
+gar G ambulanceFromWtoN -> greenFromWtoN;
+gar G ambulanceFromWtoS -> greenFromWtoS;
+gar G ambulanceFromEtoN -> greenFromEtoN;
+gar G ambulanceFromEtoS -> greenFromEtoS;
+
+//new predicate
+predicate mutualExclusion(boolean greenA, boolean greenB):
+	!(greenA & greenB);
+
+//new guarantee for not allowing green on opposite directions
+gar G mutualExclusion(greenFromWtoE, greenFromNtoS); 
+gar G mutualExclusion(greenFromEtoW, greenFromNtoS); 
+gar G mutualExclusion(greenFromWtoE, greenFromStoN); 
+gar G mutualExclusion(greenFromEtoW, greenFromStoN); 
+
+//new guarantee - car waiting will have green eventually
+guarantee pRespondsToS(carFromWtoE, greenFromWtoE);
+guarantee pRespondsToS(carFromEtoW, greenFromEtoW);
+guarantee pRespondsToS(carFromNtoS, greenFromNtoS);
+guarantee pRespondsToS(carFromStoN, greenFromStoN);
+guarantee pRespondsToS(carFromNtoE, greenFromNtoE);
+guarantee pRespondsToS(carFromNtoW, greenFromNtoW);
+guarantee pRespondsToS(carFromStoE, greenFromStoE);
+guarantee pRespondsToS(carFromStoW, greenFromStoW);
+guarantee pRespondsToS(carFromEtoN, greenFromEtoN);
+guarantee pRespondsToS(carFromEtoS, greenFromEtoS);
+guarantee pRespondsToS(carFromWtoN, greenFromWtoN);
+guarantee pRespondsToS(carFromWtoS, greenFromWtoS);
+
+//new guarantee - pedestrians waiting will have green eventually
+guarantee pRespondsToS(pedestrianInE, greenPedestrianE);
+guarantee pRespondsToS(pedestrianInW, greenPedestrianW);
+guarantee pRespondsToS(pedestrianInN, greenPedestrianN);
+guarantee pRespondsToS(pedestrianInS, greenPedestrianS);
+
+//new guarantee not allowing day and night at the same time
+gar G mutualExclusion(day, night);
+
+//new guarantee for letting cars know there is maintenance
+gar G maintenanceInE -> maintenanceSignInS;
+gar G maintenanceInW -> maintenanceSignInW;
+gar G maintenanceInN -> maintenanceSignInN;
+gar G maintenanceInS -> maintenanceSignInE;
+
