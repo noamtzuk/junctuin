@@ -2,7 +2,6 @@ import "./patterns/DwyerPatterns.spectra"
 
 module InitialSpecification
 
-
 //Environment controlled input variables (sensors)
 env boolean carFromWtoE;
 env boolean carFromEtoW;
@@ -61,6 +60,10 @@ sys boolean greenFromEtoS;
 sys boolean greenFromWtoN;
 sys boolean greenFromWtoS;
 
+//System controlled output variables (street lighting)
+sys boolean streetLightingOn;
+sys boolean streetLightingOff;
+
 //System controlled variables (lights for pedestrians)
 sys boolean greenPedestrianW;
 sys boolean greenPedestrianS;
@@ -100,15 +103,11 @@ gar G ambulanceFromWtoS -> greenFromWtoS;
 gar G ambulanceFromEtoN -> greenFromEtoN;
 gar G ambulanceFromEtoS -> greenFromEtoS;
 
-//new predicate
-predicate mutualExclusion(boolean greenA, boolean greenB):
-	!(greenA & greenB);
-
 //new guarantee for not allowing green on opposite directions
-gar G mutualExclusion(greenFromWtoE, greenFromNtoS); 
-gar G mutualExclusion(greenFromEtoW, greenFromNtoS); 
-gar G mutualExclusion(greenFromWtoE, greenFromStoN); 
-gar G mutualExclusion(greenFromEtoW, greenFromStoN); 
+gar G !(greenFromWtoE & greenFromNtoS); 
+gar G !(greenFromEtoW & greenFromNtoS); 
+gar G !(greenFromWtoE & greenFromStoN); 
+gar G !(greenFromEtoW & greenFromStoN); 
 
 //new guarantee - car waiting will have green eventually
 guarantee pRespondsToS(carFromWtoE, greenFromWtoE);
@@ -131,7 +130,9 @@ guarantee pRespondsToS(pedestrianInN, greenPedestrianN);
 guarantee pRespondsToS(pedestrianInS, greenPedestrianS);
 
 //new guarantee not allowing day and night at the same time
-gar G mutualExclusion(day, night);
+gar G (day & !night);
+gar G day -> streetLightingOff;
+gar G night -> streetLightingOn;
 
 //new guarantee for letting cars know there is maintenance
 gar G maintenanceInE -> maintenanceSignInS;
